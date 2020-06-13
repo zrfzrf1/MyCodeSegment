@@ -1,0 +1,17 @@
+
+create table M_SEQUENCE
+(
+    sequence_name varchar(20) default '' not null
+        primary key,
+    `key`         varchar(10)            null,
+    value         int(6)      default 0  null
+);
+
+create
+    definer = admin@`%` function NEXT_VAL(sequence_name varchar(10)) returns varchar(30)
+BEGIN
+	#Routine body goes here...
+  UPDATE M_SEQUENCE t, (SELECT @current_val:=`value`, @current_key:=`key` FROM M_SEQUENCE t2 WHERE t2.sequence_name=sequence_name) t3 
+  SET t.value = t.value + 1 WHERE t.sequence_name = sequence_name AND @current_key = t.key AND @current_val = t.value;
+	RETURN CONCAT(UPPER(@current_key), DATE_FORMAT(now(),'%Y%m%d%H%i%s') , LPAD(@current_val + 1,6,'0'));
+END;
